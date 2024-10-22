@@ -1,6 +1,6 @@
 # echo-pagination
 [![Run Tests](https://github.com/webstradev/echo-pagination/actions/workflows/test.yml/badge.svg)](https://github.com/webstradev/echo-pagination/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/webstradev/echo-pagination/branch/master/graph/badge.svg?token=C2D4QHYHI4)](https://codecov.io/gh/webstradev/echo-pagination)
+[![codecov](https://codecov.io/gh/webstradev/echo-pagination/graph/badge.svg?token=QCOW8N4AUR)](https://codecov.io/gh/webstradev/echo-pagination)
 [![Go Reference](https://pkg.go.dev/badge/github.com/webstradev/echo-pagination.svg)](https://pkg.go.dev/github.com/webstradev/echo-pagination)
 [![Go Report Card](https://goreportcard.com/badge/github.com/webstradev/echo-pagination)](https://goreportcard.com/report/github.com/webstradev/echo-pagination)
 [![CodeQL](https://github.com/webstradev/echo-pagination/actions/workflows/codeql.yml/badge.svg)](https://github.com/webstradev/echo-pagination/actions/workflows/codeql.yml)
