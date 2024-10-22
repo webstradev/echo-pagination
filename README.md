@@ -24,8 +24,8 @@ func main(){
   e := echo.New()
   e.Use(pagination.New())
 
-  e.GET("/hello", func(c echo.Context){
-    c.Status(http.StatusOK)  
+  e.GET("/hello", func(c echo.Context) error {
+    return c.Status(http.StatusOK)  
   })
   
 	e.Logger.Fatal(e.Start(":1323"))
@@ -46,10 +46,10 @@ import (
 func main(){
   e := echo.New()
   
-  e.GET("/hello", func(c *gin.Context){
+  e.GET("/hello", func(c echo.Context){
     page := c.GetInt("page")
   
-    c.JSON(http.StatusOK, gin.H{"page" : page})  
+		return c.String(http.StatusOK, "Hello, World!")
   }, pagination.New())
   
 	e.Logger.Fatal(e.Start(":1323"))
@@ -82,8 +82,8 @@ func main(){
     pagination.WithMaxPageSize(15),
   )
   
-  e.GET("/hello", func(c *gin.Context){
-    c.Status(http.StatusOK)  
+  e.GET("/hello", func(c echo.Context){
+    return c.String(http.StatusOK, "Hello, World!")
   }, paginator)
   
 	e.Logger.Fatal(e.Start(":1323"))
