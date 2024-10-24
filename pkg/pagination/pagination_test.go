@@ -147,8 +147,8 @@ func TestPaginationMiddleware(t *testing.T) {
 					sizeText = tt.customSizeText
 				}
 
-				gotPage := c.Get(pageText)
-				gotSize := c.Get(sizeText)
+				gotPage := pagination.MustGetPage(c, pagination.WithPageText(pageText))
+				gotSize := pagination.MustGetPageSize(c, pagination.WithSizeText(sizeText))
 
 				// Check if the page and pageSize are set correctly
 				if gotPage != tt.expectedPage {
