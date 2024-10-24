@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/matryer/is"
+
 	"github.com/webstradev/echo-pagination/pkg/pagination"
 )
 
@@ -130,6 +132,8 @@ func TestPaginationMiddleware(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			is := is.New(t)
+
 			e := echo.New()
 			req := httptest.NewRequest(http.MethodGet, "/?"+tt.queryParams.Encode(), nil)
 			rec := httptest.NewRecorder()
@@ -147,17 +151,15 @@ func TestPaginationMiddleware(t *testing.T) {
 					sizeText = tt.customSizeText
 				}
 
-				gotPage := pagination.MustGetPage(c, pagination.WithPageText(pageText))
-				gotSize := pagination.MustGetPageSize(c, pagination.WithSizeText(sizeText))
+				gotPage, err := pagination.GetPage(c, pagination.WithPageText(pageText))
+				is.NoErr(err)
 
-				// Check if the page and pageSize are set correctly
-				if gotPage != tt.expectedPage {
-					t.Errorf("Expected page %d, got %v", tt.expectedPage, gotPage)
-				}
+				gotSize, err := pagination.GetPageSize(c, pagination.WithSizeText(sizeText))
+				is.NoErr(err)
 
-				if gotSize != tt.expectedSize {
-					t.Errorf("Expected size %d, got %v", tt.expectedSize, gotSize)
-				}
+				is.Equal(gotPage, tt.expectedPage) // Didn't get the expected page.
+
+				is.Equal(gotSize, tt.expectedSize) // Didn't get the expected size.
 
 				return nil
 			})
@@ -165,6 +167,116 @@ func TestPaginationMiddleware(t *testing.T) {
 			// Execute the middleware and handler
 			if err := handler(c); err != nil {
 				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestGetPage(t *testing.T) {
+	is := is.New(t)
+
+	tests := []struct {
+		name          string
+		setupContext  func(c echo.Context)
+		customOptions []pagination.CustomOption
+		expectedPage  int
+		expectError   bool
+	}{
+		{
+			name: "Default page text",
+			setupContext: func(c echo.Context) {
+				c.Set("page", 5)
+			},
+			expectedPage: 5,
+			expectError:  false,
+		},
+		{
+			name: "Custom page text",
+			setupContext: func(c echo.Context) {
+				c.Set("custom_page", 10)
+			},
+			customOptions: []pagination.CustomOption{pagination.WithPageText("custom_page")},
+			expectedPage:  10,
+			expectError:   false,
+		},
+		{
+			name:         "Page not found in context",
+			setupContext: func(c echo.Context) {},
+			expectError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			tt.setupContext(c)
+
+			page, err := pagination.GetPage(c, tt.customOptions...)
+
+			if tt.expectError {
+				is.True(err != nil)
+			} else {
+				is.NoErr(err)
+				is.Equal(page, tt.expectedPage)
+			}
+		})
+	}
+}
+
+func TestGetPageSize(t *testing.T) {
+	is := is.New(t)
+
+	tests := []struct {
+		name          string
+		setupContext  func(c echo.Context)
+		customOptions []pagination.CustomOption
+		expectedSize  int
+		expectError   bool
+	}{
+		{
+			name: "Default size text",
+			setupContext: func(c echo.Context) {
+				c.Set("size", 25)
+			},
+			expectedSize: 25,
+			expectError:  false,
+		},
+		{
+			name: "Custom size text",
+			setupContext: func(c echo.Context) {
+				c.Set("custom_size", 50)
+			},
+			customOptions: []pagination.CustomOption{pagination.WithSizeText("custom_size")},
+			expectedSize:  50,
+			expectError:   false,
+		},
+		{
+			name:         "Size not found in context",
+			setupContext: func(c echo.Context) {},
+			expectError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			tt.setupContext(c)
+
+			size, err := pagination.GetPageSize(c, tt.customOptions...)
+
+			if tt.expectError {
+				is.True(err != nil)
+			} else {
+				is.NoErr(err)
+				is.Equal(size, tt.expectedSize)
 			}
 		})
 	}

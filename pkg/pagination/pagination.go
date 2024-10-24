@@ -13,32 +13,24 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// MustGetPage returns the page number from the request context. It will panic
-// if the page number is not found in the context which is always a developer
-// error.
-func MustGetPage(c echo.Context, customOptions ...CustomOption) int {
+// GetPage returns the page number from the request context.
+func GetPage(c echo.Context, customOptions ...CustomOption) (int, error) {
 	opts := applyCustomOptionsToDefault(customOptions...)
 	page, ok := c.Get(opts.PageText).(int)
 	if !ok {
-		panic(
-			fmt.Sprintf("%s not found in context, please ensure pagination middleware is used", opts.PageText),
-		)
+		return 0, fmt.Errorf("%s not found in context, please ensure pagination middleware is used with the correct options", opts.PageText)
 	}
-	return page
+	return page, nil
 }
 
-// MustGetPageSize returns the page size from the request context. It will panic
-// if the page size is not found in the context which is always a developer
-// error.
-func MustGetPageSize(c echo.Context, customOptions ...CustomOption) int {
+// GetPageSize returns the page size from the request context.
+func GetPageSize(c echo.Context, customOptions ...CustomOption) (int, error) {
 	opts := applyCustomOptionsToDefault(customOptions...)
 	size, ok := c.Get(opts.SizeText).(int)
 	if !ok {
-		panic(
-			fmt.Sprintf("%s not found in context, please ensure pagination middleware is used", opts.SizeText),
-		)
+		return 0, fmt.Errorf("%s not found in context, please ensure pagination middleware is used with the correct options", opts.SizeText)
 	}
-	return size
+	return size, nil
 }
 
 // New returns a new pagination middleware with custom values.
