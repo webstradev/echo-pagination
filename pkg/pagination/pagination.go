@@ -120,7 +120,14 @@ func (p *paginator) validatePageSize(size int) error {
 	return nil
 }
 
+func (p *paginator) constructHeaderKey(key string) string {
+	return p.opts.HeaderPrefix + key
+}
+
 func (p *paginator) setPageAndPageSize(page int, size int) {
 	p.c.Set(p.opts.PageText, page)
 	p.c.Set(p.opts.SizeText, size)
+
+	p.c.Response().Header().Set(p.constructHeaderKey(p.opts.PageText), strconv.Itoa(page))
+	p.c.Response().Header().Set(p.constructHeaderKey(p.opts.SizeText), strconv.Itoa(size))
 }
