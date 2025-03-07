@@ -281,3 +281,95 @@ func TestGetPageSize(t *testing.T) {
 		})
 	}
 }
+
+func TestPaginationHeaders(t *testing.T) {
+	is := is.New(t)
+
+	tests := []struct {
+		name            string
+		middleware      echo.MiddlewareFunc
+		queryParams     url.Values
+		expectedHeaders map[string]string
+	}{
+		{
+			name:       "Default headers are set correctly",
+			middleware: pagination.New(),
+			queryParams: url.Values{
+				"page": {"2"},
+				"size": {"20"},
+			},
+			expectedHeaders: map[string]string{
+				"X-Page": "2",
+				"X-Size": "20",
+			},
+		},
+		{
+			name:       "Default headers without prefix",
+			middleware: pagination.New(pagination.WithHeaderPrefix("")),
+			queryParams: url.Values{
+				"page": {"2"},
+				"size": {"20"},
+			},
+			expectedHeaders: map[string]string{
+				"page": "2",
+				"size": "20",
+			},
+		},
+		{
+			name: "Custom text headers are set correctly",
+			middleware: pagination.New(
+				pagination.WithPageText("offset"),
+				pagination.WithSizeText("limit"),
+			),
+			queryParams: url.Values{
+				"offset": {"3"},
+				"limit":  {"15"},
+			},
+			expectedHeaders: map[string]string{
+				"X-Offset": "3",
+				"X-limit":  "15",
+			},
+		},
+		{
+			name:            "No headers on invalid input",
+			middleware:      pagination.New(),
+			queryParams:     url.Values{"page": {"invalid"}},
+			expectedHeaders: map[string]string{},
+		},
+		{
+			name:        "Default values are set in headers when no query params",
+			middleware:  pagination.New(pagination.WithHeaderPrefix("X-")),
+			queryParams: url.Values{},
+			expectedHeaders: map[string]string{
+				"X-Page": "1",
+				"X-Size": "10",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			is := is.New(t)
+
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/?"+tt.queryParams.Encode(), nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			// Call middleware
+			handler := tt.middleware(func(c echo.Context) error {
+				return nil
+			})
+
+			// Execute the middleware and handler
+			err := handler(c)
+			is.NoErr(err) // Middleware execution should not error
+
+			// Check for expected headers
+			for headerKey, expectedValue := range tt.expectedHeaders {
+				gotValue := rec.Header().Get(headerKey)
+				is.Equal(gotValue, expectedValue) // Header value should match expected value
+			}
+		})
+	}
+}
