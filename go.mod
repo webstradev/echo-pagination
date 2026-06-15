@@ -2,7 +2,7 @@ module github.com/webstradev/echo-pagination
 
 go 1.26
 
-require github.com/labstack/echo/v4 v4.15.2
+require github.com/labstack/echo/v4 v4.15.3
 
 require (
 	github.com/labstack/gommon v0.5.0 // indirect
